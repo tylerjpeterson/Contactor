@@ -134,7 +134,7 @@ $ bin/build.sh prod
 
 #### config.rb
 This script recursively updates build settings within a generated `xcodeproj` project.
-This is necessary to quite compiler errors due to dependencies supporting versions of macOS prior to version `10.11`.
+This is necessary to quiet compiler errors due to dependencies supporting versions of macOS prior to version `10.11`.
 
 #### docs.sh
 Uses [Jazzy](https://github.com/realm/jazzy) to generate module documentation.
