@@ -97,8 +97,12 @@ struct ContactRecord: IterableProperties {
 		self.nameSuffix = payload.nameSuffix
 		self.nickname = payload.nickname
 
+		self.postalAddress = ""
+
 		for row in payload.postalAddresses {
-			self.postalAddress = "\n\(row.value.street)\n\(row.value.city), \(row.value.state) \(row.value.postalCode) \(row.value.country)"
+			if row.value.street.count > 0 && row.value.city.count > 0 && row.value.state.count > 0 && row.value.postalCode.count > 0 {
+				self.postalAddress = "\n\(row.value.street)\n\(row.value.city), \(row.value.state) \(row.value.postalCode) \(row.value.country)"
+			}
 		}
 
 		self.organization = payload.organizationName
@@ -244,8 +248,10 @@ public class Contactor {
 	///
 	/// - Parameters:
 	///   - filter: The string to filter contact names against
-	///   - exportVcfs: Whether or not to generate VCF files of any matching contacts
-	public func searchContacts(filter: String = "*", output: String? = nil, format: String = "text") {
+	///   - output: Directory to write output files to
+	///   - format: Format of returned results
+	/// - Returns: String value representing found contacts in the requested format
+	public func searchContacts(filter: String = "*", output: String? = nil, format: String = "text", completion: @escaping (_ results: String) -> Void) {
 		self.getContacts(matching: filter) {(result: [CNContact]?) in
 			var outputString: String = ""
 
@@ -258,19 +264,19 @@ public class Contactor {
 					outputString += foundContact.contactToString() + "\n"
 				}
 
-				print(outputString)
+				completion(outputString)
 
 			/// Write output to a VCF file in the passed directory (output parameter)
 			} else if format == "file" {
+				var dir: URL!
+
+				if output == nil {
+					dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+				} else {
+					dir = URL.init(fileURLWithPath: output!)
+				}
+
 				for contact in result! {
-					var dir: URL!
-
-					if output == nil {
-						dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-					} else {
-						dir = URL.init(fileURLWithPath: output!)
-					}
-
 					var fileURL = dir.appendingPathComponent("\(contact.givenName) \(contact.familyName).vcf")
 
 					if fileURL.lastPathComponent == " .vcf" {
@@ -286,6 +292,8 @@ public class Contactor {
 					}
 				}
 
+				completion("\(result?.count ?? 0) VCF file(s) written to \(dir.path)")
+
 			/// Write output as VCF data to stdout (easily create an aggregate VCF by piping output)
 			} else if format == "vcf" {
 				for contact in result! {
@@ -295,7 +303,7 @@ public class Contactor {
 					} catch {}
 				}
 
-				print(outputString)
+				completion(outputString)
 
 			/// Write output to CSV format, written to stdout
 			} else {
@@ -306,7 +314,7 @@ public class Contactor {
 					outputString += foundContact.contactToCSV() + "\n"
 				}
 
-				print(outputString)
+				completion(outputString)
 			}
 		}
 	}
@@ -314,16 +322,16 @@ public class Contactor {
 	/// Determines if and how many contacts match the passed search criteria, writing the number of matches to stdout
 	///
 	/// - Parameter filter: The string to filter contact names against
-	public func contactExists(filter: String) {
+	public func contactExists(filter: String, completion: @escaping (_ results: Int) -> Void) {
 		self.getContacts(matching: filter) {(result: [CNContact]?) in
-			print("\(result?.count ?? 0)")
+			completion(result?.count ?? 0)
 		}
 	}
 
 	/// Adds a contact to the user's default contact group
 	///
 	/// - Parameter contact: Dictionary of properties and values used to create the contact
-	public func addContact(contact: [String: String]) {
+	public func addContact(contact: [String: String], completion: @escaping (_ createdContact: CNMutableContact?) -> Void) {
 		let saveRequest = CNSaveRequest()
 		let newContact = CNMutableContact()
 		let homeAddress = CNMutablePostalAddress()
@@ -371,10 +379,39 @@ public class Contactor {
 
 		do {
 			try self.store.execute(saveRequest)
-			print(saveRequest)
-			print("Contact saved with id")
+
+			completion(newContact)
 		} catch {
 			print("Error storing contact: \(error)")
+
+			completion(nil)
+		}
+	}
+
+	/// Remove a contact based on its identifier
+	///
+	/// - Parameters:
+	///   - id: Identifier of contact to be removed
+	///   - completion: Completion handler passed true on success, false on failure
+	public func removeContact(id: String, completion: @escaping (_ result: Bool) -> Void) {
+		let keysToFetch: [CNKeyDescriptor] = [
+			CNContactImageDataKey as CNKeyDescriptor,
+			CNContactVCardSerialization.descriptorForRequiredKeys()
+		]
+
+		do {
+			let request: CNSaveRequest = CNSaveRequest()
+			let identifierPredicate: NSPredicate = CNContact.predicateForContacts(withIdentifiers: [id])
+			let contacts: [CNContact] = try store.unifiedContacts(matching: identifierPredicate, keysToFetch: keysToFetch)
+			let contact: CNContact! = contacts.first
+			let mutable: CNMutableContact = contact.mutableCopy() as! CNMutableContact
+
+			request.delete(mutable)
+			try self.store.execute(request)
+			completion(true)
+		} catch {
+			print("Error removing contact: \(error)")
+			completion(false)
 		}
 	}
 
@@ -384,7 +421,8 @@ public class Contactor {
 	///   - matching: The string to filter contact names against
 	///   - completion: Callback fired upon retrieval (and optional export) of contacts
 	private func getContacts(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
-		let predicate: NSPredicate = CNContact.predicateForContacts(matchingName: matching)
+		let namePredicate: NSPredicate = CNContact.predicateForContacts(matchingName: matching)
+		let identifierPredicate: NSPredicate = CNContact.predicateForContacts(withIdentifiers: [matching])
 
 		let keysToFetch: [CNKeyDescriptor] = [
 			CNContactImageDataKey as CNKeyDescriptor,
@@ -392,7 +430,12 @@ public class Contactor {
 		]
 
 		do {
-			let contacts: [CNContact] = try store.unifiedContacts(matching: predicate, keysToFetch: keysToFetch)
+			var contacts: [CNContact] = try store.unifiedContacts(matching: namePredicate, keysToFetch: keysToFetch)
+
+			if contacts.count < 1 {
+				contacts = try store.unifiedContacts(matching: identifierPredicate, keysToFetch: keysToFetch)
+			}
+
 			completion(contacts)
 		} catch let error as NSError {
 			print(error.localizedDescription)

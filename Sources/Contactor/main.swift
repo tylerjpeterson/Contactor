@@ -24,7 +24,7 @@ class SearchCommand: Command {
 	let name = "search"
 
 	/// File output option
-	let file = Key<String>("-f", "--file", description: "Write output to individual VCF files in directory <value>")
+	let dir = Key<String>("-d", "--dir", description: "Write output to individual VCF files in directory <value>")
 
 	/// Text output option
 	let str = Flag("-t", "--text", description: "Write output to stdout as text (default)")
@@ -37,13 +37,13 @@ class SearchCommand: Command {
 
 	/// Enforcing option group restrictions
 	var optionGroups: [OptionGroup] {
-		return [OptionGroup(options: [file, str, csv, vcf], restriction: .atMostOne)]
+		return [OptionGroup(options: [dir, str, csv, vcf], restriction: .atMostOne)]
 	}
 
 	/// Search command parameters
 	let search = Parameter()
 
-	/// Seach command's short description
+	/// Search command's short description
 	let shortDescription = "Search contacts"
 
 	/// Passes command instructions as options to the ContactorCore instance
@@ -51,13 +51,21 @@ class SearchCommand: Command {
 	/// - Throws: Error
 	func execute() throws {
 		if csv.value {
-			contacts.searchContacts(filter: search.value, format: "csv")
+			contacts.searchContacts(filter: search.value, format: "csv", completion: { results in
+				print(results)
+			})
 		} else if vcf.value {
-			contacts.searchContacts(filter: search.value, format: "vcf")
-		} else if (file.value != nil) {
-			contacts.searchContacts(filter: search.value, output: file.value, format: "file")
+			contacts.searchContacts(filter: search.value, format: "vcf", completion: { results in
+				print(results)
+			})
+		} else if (dir.value != nil) {
+			contacts.searchContacts(filter: search.value, output: dir.value, format: "file", completion: { results in
+				print(results)
+			})
 		} else {
-			contacts.searchContacts(filter: search.value, format: "text")
+			contacts.searchContacts(filter: search.value, format: "text", completion: { results in
+				print(results)
+			})
 		}
 	}
 }
@@ -69,7 +77,7 @@ class ListCommand: Command {
 	let name = "list"
 
 	/// File output option
-	let file = Key<String>("-f", "--file", description: "Write output to individual VCF files in directory <value>")
+	let dir = Key<String>("-d", "--dir", description: "Write output to individual VCF files in directory <value>")
 
 	/// Text output option
 	let str = Flag("-t", "--text", description: "Write output to stdout as text (default)")
@@ -82,7 +90,7 @@ class ListCommand: Command {
 
 	/// Enforcing option group restrictions
 	var optionGroups: [OptionGroup] {
-		return [OptionGroup(options: [file, str, csv, vcf], restriction: .atMostOne)]
+		return [OptionGroup(options: [dir, str, csv, vcf], restriction: .atMostOne)]
 	}
 
 	/// Seach command's short description
@@ -93,13 +101,21 @@ class ListCommand: Command {
 	/// - Throws: Error
 	func execute() throws {
 		if csv.value {
-			contacts.searchContacts(format: "csv")
+			contacts.searchContacts(format: "csv", completion: { results in
+				print(results)
+			})
 		} else if vcf.value {
-			contacts.searchContacts(format: "vcf")
-		} else if (file.value != nil) {
-			contacts.searchContacts(output: file.value, format: "file")
+			contacts.searchContacts(format: "vcf", completion: { results in
+				print(results)
+			})
+		} else if (dir.value != nil) {
+			contacts.searchContacts(output: dir.value, format: "file", completion: { results in
+				print(results)
+			})
 		} else {
-			contacts.searchContacts(format: "text")
+			contacts.searchContacts(format: "text", completion: { results in
+				print(results)
+			})
 		}
 	}
 }
@@ -120,7 +136,35 @@ class ExistsCommand: Command {
 	///
 	/// - Throws: Error
 	func execute() throws {
-		contacts.contactExists(filter: search.value)
+		contacts.contactExists(filter: search.value, completion: { results in
+			print("\(results)")
+		})
+	}
+}
+
+/// Remove command - removes a contact based on its identifier
+class RemoveCommand: Command {
+
+	/// Name of command
+	let name = "remove"
+
+	/// Exists command parameters
+	let identifier = Parameter()
+
+	/// Exist command's short description
+	let shortDescription = "Remove a contact"
+
+	/// Passes command instructions as options to the ContactorCore instance
+	///
+	/// - Throws: Error
+	func execute() throws {
+		contacts.removeContact(id: self.identifier.value, completion: { success in
+			if success == true {
+				print("Contact with identifier \(self.identifier.value) successfully removed.")
+			} else {
+				print("Contact with identifier \(self.identifier.value) could not be removed.")
+			}
+		})
 	}
 }
 
@@ -190,7 +234,17 @@ class AddCommand: Command {
 		contactProps["birthday"] = birthday.value ?? ""
 		contactProps["birthmonth"] = birthmonth.value ?? ""
 
-		contacts.addContact(contact: contactProps)
+		contacts.addContact(contact: contactProps, completion: { newContact in
+			if newContact != nil {
+				let id: String! = newContact?.identifier
+
+				contacts.searchContacts(filter: id, format: "text", completion: { result in
+					print(result)
+				})
+			} else {
+				print("New contact was not created.")
+			}
+		})
 	}
 }
 
@@ -198,7 +252,8 @@ cli.commands = [
 	AddCommand(),
 	ListCommand(),
 	ExistsCommand(),
-	SearchCommand()
+	SearchCommand(),
+	RemoveCommand()
 ]
 
 cli.goAndExit()
