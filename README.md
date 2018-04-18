@@ -1,7 +1,7 @@
 # Contactor
 > Manage contacts from the command line via the macOS Contacts framework.
 
-Swift module utilizing the [Contacts Framework](https://developer.apple.com/documentation/contacts) to search, add and export contacts in various formats (VCF, text, CSV).
+Swift module utilizing the [Contacts Framework](https://developer.apple.com/documentation/contacts) to search, add, remove and export contacts in various formats (VCF, text, CSV).
 This module requires the Contacts Framework, and is therefore only supported on macOS version 10.11+.
 
 ## Installation
