@@ -11,73 +11,73 @@ import Contacts
 public struct ContactRecord: IterableProperties {
 
 	/// Identifier
-	var id: String! = ""
+	public var id: String! = ""
 
 	/// Contact type (business vs individual)
-	var type: String! = ""
+	public var type: String! = ""
 
 	/// Contact name prefix
-	var namePrefix: String! = ""
+	public var namePrefix: String! = ""
 
 	/// Contact first name
-	var givenName: String! = ""
+	public var givenName: String! = ""
 
 	/// Contact middle name
-	var middleName: String! = ""
+	public var middleName: String! = ""
 
 	/// Contact last name
-	var familyName: String! = ""
+	public var familyName: String! = ""
 
 	/// Maiden name
-	var previousFamilyName: String! = ""
+	public var previousFamilyName: String! = ""
 
 	/// Suffix
-	var nameSuffix: String! = ""
+	public var nameSuffix: String! = ""
 
 	/// Nickname
-	var nickname: String! = ""
+	public var nickname: String! = ""
 
 	/// Address
-	var postalAddress: String! = ""
+	public var postalAddress: String! = ""
 
 	/// Company
-	var organization: String! = ""
+	public var organization: String! = ""
 
 	/// Department
-	var department: String! = ""
+	public var department: String! = ""
 
 	/// Title
-	var jobTitle: String! = ""
+	public var jobTitle: String! = ""
 
 	/// Birthday
-	var birthday: String! = ""
+	public var birthday: String! = ""
 
 	/// Notes
-	var notes: String! = ""
+	public var notes: String! = ""
 
 	/// Pic image data
-	var imageData: Data?
+	public var imageData: Data?
 
 	/// Pic thumbnail image data
-	var thumbnailImageData: Data?
+	public var thumbnailImageData: Data?
 
 	/// Pic data available
-	var hasImageData: Bool! = false
+	public var hasImageData: Bool! = false
 
 	/// Collection of phone numbers
-	var phoneNumbers: String! = ""
+	public var phoneNumbers: String! = ""
 
 	/// Collection of email addresses
-	var emailAddresses: String! = ""
+	public var emailAddresses: String! = ""
 
 	/// Collection of URLs
-	var urlAddresses: String! = ""
+	public var urlAddresses: String! = ""
 
 	/// Collection of social profiles
-	var socialProfiles: String! = ""
+	public var socialProfiles: String! = ""
 
 	/// Collection of IM addresses
-	var instantMessageAddresses: String! = ""
+	public var instantMessageAddresses: String! = ""
 
 	/// Base constructor for static prop retrieval
 	init() {
@@ -153,7 +153,7 @@ public struct ContactRecord: IterableProperties {
 	/// Converts a contact's properties to a string
 	///
 	/// - Returns: Properties as string
-	func contactToString() -> String {
+	public func contactToString() -> String {
 		var output: String = ""
 
 		do {
@@ -179,7 +179,7 @@ public struct ContactRecord: IterableProperties {
 	/// Returns instance properties as a CSV row
 	///
 	/// - Returns: String CSV row of properties
-	func contactToCSV() -> String {
+	public func contactToCSV() -> String {
 		var row: [String] = []
 
 		do {
@@ -202,7 +202,7 @@ public struct ContactRecord: IterableProperties {
 	/// Returns property keys for use as a CSV header row
 	///
 	/// - Returns: String of properties as CSV header
-	static func CSVHeader() -> String {
+	public static func CSVHeader() -> String {
 		var row: [String] = []
 
 		do {
