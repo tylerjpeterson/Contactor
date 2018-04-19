@@ -8,7 +8,7 @@ import Foundation
 import Contacts
 
 /// ContactRecord mutates CNContact instances into various output formats
-struct ContactRecord: IterableProperties {
+public struct ContactRecord: IterableProperties {
 
 	/// Identifier
 	var id: String! = ""
@@ -244,13 +244,30 @@ public class Contactor {
 		}
 	}
 
+	/// Search user contacts against a filter, returning ContactRecord instances
+	///
+	/// - Parameters:
+	///   - filter: The string to filter contact names against
+	///   - completion: Completion handler returning output as a collection of ContactRecord instances
+	public func searchContactsAsContactRecords(filter: String = "*", completion: @escaping (_ results: [ContactRecord]) -> Void) {
+		var contactRecords: [ContactRecord] = []
+
+		self.getContacts(matching: filter) {(result: [CNContact]?) in
+			for contact in result! {
+				contactRecords.append(ContactRecord(payload: contact))
+			}
+
+			completion(contactRecords)
+		}
+	}
+
 	/// Search user contacts against a filter, and optionally export the results as a collection of VCFs
 	///
 	/// - Parameters:
 	///   - filter: The string to filter contact names against
 	///   - output: Directory to write output files to
 	///   - format: Format of returned results
-	/// - Returns: String value representing found contacts in the requested format
+	///   - completion: Completion handler returning output in requested format as a String
 	public func searchContacts(filter: String = "*", output: String? = nil, format: String = "text", completion: @escaping (_ results: String) -> Void) {
 		self.getContacts(matching: filter) {(result: [CNContact]?) in
 			var outputString: String = ""
@@ -330,8 +347,10 @@ public class Contactor {
 
 	/// Adds a contact to the user's default contact group
 	///
-	/// - Parameter contact: Dictionary of properties and values used to create the contact
-	public func addContact(contact: [String: String], completion: @escaping (_ createdContact: CNMutableContact?) -> Void) {
+	/// - Parameters:
+	///   - contact: Dictionary of properties and values used to create the contact
+	///   - completion: Completion handler passing the newly created CNContact's identifier
+	public func addContact(contact: [String: String], completion: @escaping (_ createdContactIdentifier: String?) -> Void) {
 		let saveRequest = CNSaveRequest()
 		let newContact = CNMutableContact()
 		let homeAddress = CNMutablePostalAddress()
@@ -380,7 +399,7 @@ public class Contactor {
 		do {
 			try self.store.execute(saveRequest)
 
-			completion(newContact)
+			completion(newContact.identifier)
 		} catch {
 			print("Error storing contact: \(error)")
 
@@ -415,12 +434,12 @@ public class Contactor {
 		}
 	}
 
-	/// Internal method to search contacts filtering against passed parameters, and optionally exporting results to VCF
+	/// Method to search contacts filtering against passed parameters, and optionally exporting results to VCF
 	///
 	/// - Parameters:
 	///   - matching: The string to filter contact names against
 	///   - completion: Callback fired upon retrieval (and optional export) of contacts
-	private func getContacts(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
+	public func getContacts(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
 		let namePredicate: NSPredicate = CNContact.predicateForContacts(matchingName: matching)
 		let identifierPredicate: NSPredicate = CNContact.predicateForContacts(withIdentifiers: [matching])
 

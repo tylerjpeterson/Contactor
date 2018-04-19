@@ -234,11 +234,9 @@ class AddCommand: Command {
 		contactProps["birthday"] = birthday.value ?? ""
 		contactProps["birthmonth"] = birthmonth.value ?? ""
 
-		contacts.addContact(contact: contactProps, completion: { newContact in
-			if newContact != nil {
-				let id: String! = newContact?.identifier
-
-				contacts.searchContacts(filter: id, format: "text", completion: { result in
+		contacts.addContact(contact: contactProps, completion: { newContactIdentifier in
+			if newContactIdentifier != nil {
+				contacts.searchContacts(filter: newContactIdentifier!, format: "text", completion: { result in
 					print(result)
 				})
 			} else {
