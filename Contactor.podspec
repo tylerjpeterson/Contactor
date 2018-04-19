@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
 	s.authors = { "tylerjpeterson" => "tylerjpeterson@gmail.com" }
 
 	s.requires_arc = true
-	s.osx.deployment_target = "10.11"
+	s.osx.deployment_target = "10.12"
 	s.source = { :git => "https://github.com/kettle/Contactor.git", :tag => s.version }
 	s.source_files = "Sources/ContactorCore/*.swift"
 end

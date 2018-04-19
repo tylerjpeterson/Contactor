@@ -2,7 +2,7 @@
 > Manage contacts from the command line via the macOS Contacts framework.
 
 Swift module utilizing the [Contacts Framework](https://developer.apple.com/documentation/contacts) to search, add, remove and export contacts in various formats (VCF, text, CSV).
-This module requires the Contacts Framework, and is therefore only supported on macOS version 10.11+.
+This module requires the Contacts Framework, and is therefore only supported on macOS version 10.12+.
 
 ## Installation
 ```sh
@@ -101,7 +101,7 @@ $ Contactor list
 
 ### VCF files
 There are two ways to generate VCF files from Contactor.
-The first is to set the "file" parameter to the directory where you want to save your VCF files.
+The first is to set the "dir" parameter to the directory where you want to save your VCF files.
 Contactor will generate a VCF file for each matched contact at that location.
 
 ```
@@ -134,7 +134,7 @@ $ bin/build.sh prod
 
 #### config.rb
 This script recursively updates build settings within a generated `xcodeproj` project.
-This is necessary to quiet compiler errors due to dependencies supporting versions of macOS prior to version `10.11`.
+This is necessary to quiet compiler errors due to dependencies supporting versions of macOS prior to version `10.12`.
 
 #### docs.sh
 Uses [Jazzy](https://github.com/realm/jazzy) to generate module documentation.
