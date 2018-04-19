@@ -13,10 +13,12 @@ SHA="$(shasum -a 256 "releases/Contactor-$VER.tar.gz" | awk '{printf $1}')"
 
 cp "bin/release.template.rb" "Contactor.rb"
 cp "bin/Info.template.plist" "Info.plist"
+cp "bin/Contactor.template.podspec" "Contactor.podspec"
 
 sed -i "" s,🥦,$VER,g "Info.plist"
 sed -i "" s,🥦,$VER,g "Contactor.rb"
 sed -i "" s,😇,$SHA,g "Contactor.rb"
+sed -i "" s,🥦,$VER,g "Contactor.podspec"
 
 mv "Contactor.rb" "../../Formulae/homebrew-kettle/Contactor.rb"
 
