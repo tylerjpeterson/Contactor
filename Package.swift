@@ -16,7 +16,7 @@ let package = Package(
 	dependencies: [
 		.package(
 			url: "https://github.com/jakeheis/SwiftCLI",
-			from: "4.2.2"
+			from: "5.0.0"
 		)
 	],
 	targets: [
