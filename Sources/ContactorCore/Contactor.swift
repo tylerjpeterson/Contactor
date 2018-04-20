@@ -7,216 +7,6 @@
 import Foundation
 import Contacts
 
-/// ContactRecord mutates CNContact instances into various output formats
-public struct ContactRecord: IterableProperties {
-
-	/// Identifier
-	public var id: String! = ""
-
-	/// Contact type (business vs individual)
-	public var type: String! = ""
-
-	/// Contact name prefix
-	public var namePrefix: String! = ""
-
-	/// Contact first name
-	public var givenName: String! = ""
-
-	/// Contact middle name
-	public var middleName: String! = ""
-
-	/// Contact last name
-	public var familyName: String! = ""
-
-	/// Maiden name
-	public var previousFamilyName: String! = ""
-
-	/// Suffix
-	public var nameSuffix: String! = ""
-
-	/// Nickname
-	public var nickname: String! = ""
-
-	/// Address
-	public var postalAddress: String! = ""
-
-	/// Company
-	public var organization: String! = ""
-
-	/// Department
-	public var department: String! = ""
-
-	/// Title
-	public var jobTitle: String! = ""
-
-	/// Birthday
-	public var birthday: String! = ""
-
-	/// Notes
-	public var notes: String! = ""
-
-	/// Pic image data
-	public var imageData: Data?
-
-	/// Pic thumbnail image data
-	public var thumbnailImageData: Data?
-
-	/// Pic data available
-	public var hasImageData: Bool! = false
-
-	/// Collection of phone numbers
-	public var phoneNumbers: String! = ""
-
-	/// Collection of email addresses
-	public var emailAddresses: String! = ""
-
-	/// Collection of URLs
-	public var urlAddresses: String! = ""
-
-	/// Collection of social profiles
-	public var socialProfiles: String! = ""
-
-	/// Collection of IM addresses
-	public var instantMessageAddresses: String! = ""
-
-	/// Base constructor for static prop retrieval
-	init() {
-	}
-
-	/// Instantiate instance by passing CNContact instance
-	///
-	/// - Parameter payload: CNContact instance
-	init(payload: CNContact) {
-		self.id = payload.identifier
-		self.type = payload.contactType.rawValue == 1 ? "Business" : "Individual"
-		self.namePrefix = payload.namePrefix
-		self.givenName = payload.givenName
-		self.middleName = payload.middleName
-		self.familyName = payload.familyName
-		self.previousFamilyName = payload.previousFamilyName
-		self.nameSuffix = payload.nameSuffix
-		self.nickname = payload.nickname
-
-		self.postalAddress = ""
-
-		for row in payload.postalAddresses {
-			if row.value.street.count > 0 && row.value.city.count > 0 && row.value.state.count > 0 && row.value.postalCode.count > 0 {
-				self.postalAddress = "\n\(row.value.street)\n\(row.value.city), \(row.value.state) \(row.value.postalCode) \(row.value.country)"
-			}
-		}
-
-		self.organization = payload.organizationName
-		self.department = payload.departmentName
-		self.jobTitle = payload.jobTitle
-
-		if (payload.birthday != nil) {
-			let f = DateFormatter()
-			f.dateFormat = "MMMM d"
-			self.birthday = f.string(from: (payload.birthday?.date!)!)
-		}
-
-		self.notes = payload.note
-		self.hasImageData = payload.imageDataAvailable
-
-		if self.hasImageData {
-			self.imageData = payload.imageData
-			self.thumbnailImageData = payload.thumbnailImageData
-		}
-
-		self.phoneNumbers = "\n"
-		self.emailAddresses = "\n"
-		self.urlAddresses = "\n"
-		self.socialProfiles = "\n"
-		self.instantMessageAddresses = "\n"
-
-		for num in payload.phoneNumbers {
-			self.phoneNumbers = self.phoneNumbers + "\(num.label?.description ?? ""): \(num.value.stringValue)\n"
-		}
-
-		for num in payload.emailAddresses {
-			self.emailAddresses = self.emailAddresses + "\(num.label?.description ?? ""): \(num.value)\n"
-		}
-
-		for num in payload.urlAddresses {
-			self.urlAddresses = self.urlAddresses + "\(num.label?.description ?? ""): \(num.value)\n"
-		}
-
-		for num in payload.socialProfiles {
-			self.socialProfiles = self.socialProfiles + "\(num.label?.description ?? ""): \(num.value)\n"
-		}
-
-		for num in payload.instantMessageAddresses {
-			self.instantMessageAddresses = self.instantMessageAddresses + "\(num.value.username)\n"
-		}
-	}
-
-	/// Converts a contact's properties to a string
-	///
-	/// - Returns: Properties as string
-	public func contactToString() -> String {
-		var output: String = ""
-
-		do {
-			let props = try self.allProperties()
-
-			for prop in props {
-				let outputValue = (prop.value as! String)
-					.replacingOccurrences(of: "_$!<", with: "")
-					.replacingOccurrences(of: ">!$_", with: "")
-
-				output += prop.key
-				output += ": "
-				output += outputValue
-				output += "\n"
-				output = output.replacingOccurrences(of: "\n\n", with: "\n")
-			}
-		} catch _ {
-		}
-
-		return output
-	}
-
-	/// Returns instance properties as a CSV row
-	///
-	/// - Returns: String CSV row of properties
-	public func contactToCSV() -> String {
-		var row: [String] = []
-
-		do {
-			let props = try self.allProperties()
-
-			for prop in props {
-				let outputValue = (prop.value as! String)
-					.replacingOccurrences(of: "_$!<", with: "")
-					.replacingOccurrences(of: ">!$_", with: "")
-					.trimmingCharacters(in: .whitespacesAndNewlines)
-
-				row.append(outputValue)
-			}
-		} catch _ {
-		}
-
-		return "\"" + row.joined(separator: "\",\"") + "\""
-	}
-
-	/// Returns property keys for use as a CSV header row
-	///
-	/// - Returns: String of properties as CSV header
-	public static func CSVHeader() -> String {
-		var row: [String] = []
-
-		do {
-			let props = try ContactRecord().allProperties()
-			for prop in props {
-				row.append(prop.key)
-			}
-		} catch _ {
-		}
-
-		return "\"" + row.joined(separator: "\",\"") + "\""
-	}
-}
-
 /// Provides a simplified API to search contacts, determine their existence, and create new contacts via Apple's Contacts framework.
 ///
 /// - Requires: Apple Contacts Framework - `import Contacts`
@@ -244,104 +34,58 @@ public class Contactor {
 		}
 	}
 
+	/// Search user contacts against a filter, and optionally export the results as a collection of VCFs
+	///
+	/// - Parameters:
+	///   - filter: The string to filter contact names against
+	///   - deepSearch: Search all contact properties for "filter"
+	///   - output: Directory to write output files to
+	///   - format: Format of returned results
+	///   - completion: Completion handler returning output in requested format as a String
+	public func searchContacts(filter: String = "*", deepSearch: Bool = false, output: String? = nil, format: String = "text", completion: @escaping (_ results: String) -> Void) {
+		if deepSearch {
+			self.findContactsDeep(matching: filter) {(result: [CNContact]?) in
+				completion(self.formatSearchResults(filter: filter, output: output, format: format, result: result!))
+			}
+		} else {
+			self.findContacts(matching: filter) {(result: [CNContact]?) in
+				completion(self.formatSearchResults(filter: filter, output: output, format: format, result: result!))
+			}
+		}
+	}
+
 	/// Search user contacts against a filter, returning ContactRecord instances
 	///
 	/// - Parameters:
 	///   - filter: The string to filter contact names against
 	///   - completion: Completion handler returning output as a collection of ContactRecord instances
-	public func searchContactsAsContactRecords(filter: String = "*", completion: @escaping (_ results: [ContactRecord]) -> Void) {
+	public func searchContactRecords(filter: String = "*", deepSearch: Bool = false, completion: @escaping (_ results: [ContactRecord]) -> Void) {
 		var contactRecords: [ContactRecord] = []
 
-		self.getContacts(matching: filter) {(result: [CNContact]?) in
+		self.findContacts(matching: filter) {(result: [CNContact]?) in
 			for contact in result! {
-				contactRecords.append(ContactRecord(payload: contact))
+				contactRecords.append(ContactRecord(contactInstance: contact))
 			}
 
 			completion(contactRecords)
 		}
 	}
 
-	/// Search user contacts against a filter, and optionally export the results as a collection of VCFs
+	/// Determines if and how many contacts match the passed search criteria, writing the number of matches to stdout
 	///
 	/// - Parameters:
 	///   - filter: The string to filter contact names against
-	///   - output: Directory to write output files to
-	///   - format: Format of returned results
-	///   - completion: Completion handler returning output in requested format as a String
-	public func searchContacts(filter: String = "*", output: String? = nil, format: String = "text", completion: @escaping (_ results: String) -> Void) {
-		self.getContacts(matching: filter) {(result: [CNContact]?) in
-			var outputString: String = ""
-
-			/// Output data line by line directly to stdout
-			if format == "text" {
-				outputString += "Found \(result?.count ?? 0) contacts matching \"\(filter)\":\n\n"
-
-				for contact in result! {
-					let foundContact = ContactRecord(payload: contact)
-					outputString += foundContact.contactToString() + "\n"
-				}
-
-				completion(outputString)
-
-			/// Write output to a VCF file in the passed directory (output parameter)
-			} else if format == "file" {
-				var dir: URL!
-
-				if output == nil {
-					dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-				} else {
-					dir = URL.init(fileURLWithPath: output!)
-				}
-
-				for contact in result! {
-					var fileURL = dir.appendingPathComponent("\(contact.givenName) \(contact.familyName).vcf")
-
-					if fileURL.lastPathComponent == " .vcf" {
-						fileURL = dir.appendingPathComponent("\(contact.identifier).vcf")
-					}
-
-					do {
-						try CNContactVCardSerialization
-							.data(jpegPhotoContacts: [contact])
-							.write(to: fileURL, options: [Data.WritingOptions.atomic])
-					} catch let error {
-						print(error)
-					}
-				}
-
-				completion("\(result?.count ?? 0) VCF file(s) written to \(dir.path)")
-
-			/// Write output as VCF data to stdout (easily create an aggregate VCF by piping output)
-			} else if format == "vcf" {
-				for contact in result! {
-					do {
-						let data = try CNContactVCardSerialization.data(jpegPhotoContacts: [contact])
-						outputString += String(data: data, encoding: .utf8)! + "\n"
-					} catch {}
-				}
-
-				completion(outputString)
-
-			/// Write output to CSV format, written to stdout
-			} else {
-				outputString += ContactRecord.CSVHeader() + "\n"
-
-				for contact in result! {
-					let foundContact = ContactRecord(payload: contact)
-					outputString += foundContact.contactToCSV() + "\n"
-				}
-
-				completion(outputString)
+	///   - deepSearch: Search all contact properties for "filter"
+	///   - completion: Completion handler passing the number of matching contacts
+	public func contactExists(filter: String, deepSearch: Bool = false, completion: @escaping (_ results: Int) -> Void) {
+		if deepSearch {
+			self.findContactsDeep(matching: filter) {(result: [CNContact]?) in
+				completion(result?.count ?? 0)
 			}
-		}
-	}
-
-	/// Determines if and how many contacts match the passed search criteria, writing the number of matches to stdout
-	///
-	/// - Parameter filter: The string to filter contact names against
-	public func contactExists(filter: String, completion: @escaping (_ results: Int) -> Void) {
-		self.getContacts(matching: filter) {(result: [CNContact]?) in
-			completion(result?.count ?? 0)
+		} else {
+			self.findContacts(matching: filter) {(result: [CNContact]?) in
+				completion(result?.count ?? 0)
+			}
 		}
 	}
 
@@ -358,8 +102,8 @@ public class Contactor {
 		let emailAddresses = contact["email"]?.components(separatedBy: ",") ?? [""]
 		let phoneNumbers = contact["phone"]?.components(separatedBy: ",") ?? [""]
 
-		var emails: [CNLabeledValue<NSString>] = []
 		var numbers: [CNLabeledValue<CNPhoneNumber>] = []
+		var emails: [CNLabeledValue<NSString>] = []
 
 		for email in emailAddresses {
 			emails.append(CNLabeledValue(
@@ -398,11 +142,9 @@ public class Contactor {
 
 		do {
 			try self.store.execute(saveRequest)
-
 			completion(newContact.identifier)
 		} catch {
 			print("Error storing contact: \(error)")
-
 			completion(nil)
 		}
 	}
@@ -434,12 +176,12 @@ public class Contactor {
 		}
 	}
 
-	/// Method to search contacts filtering against passed parameters, and optionally exporting results to VCF
+	/// Method to search contacts setting "matching" param as the matchingName predicate
 	///
 	/// - Parameters:
 	///   - matching: The string to filter contact names against
-	///   - completion: Callback fired upon retrieval (and optional export) of contacts
-	public func getContacts(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
+	///   - completion: Completion handler with matching contacts
+	public func findContacts(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
 		let namePredicate: NSPredicate = CNContact.predicateForContacts(matchingName: matching)
 		let identifierPredicate: NSPredicate = CNContact.predicateForContacts(withIdentifiers: [matching])
 
@@ -461,6 +203,27 @@ public class Contactor {
 		}
 	}
 
+	/// Method to retrieve all contacts with a property value matching "matching"
+	///
+	/// - Parameters:
+	///   - matching: The string to filter contact properties against
+	///   - completion: Completion handler with matching contacts
+	public func findContactsDeep(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
+		var matchingContacts: [CNContact] = []
+
+		self.findContacts(matching: "*") { (contacts) in
+			for contact in contacts {
+				let contactRecord = ContactRecord(contactInstance: contact)
+
+				if contactRecord.somePropertyContains(search: matching) == true {
+					matchingContacts.append(contact)
+				}
+			}
+
+			completion(matchingContacts)
+		}
+	}
+
 	/// Internal method to save a contact as a VCF
 	///
 	/// - Parameter contacts: Collection of contacts to export
@@ -478,17 +241,80 @@ public class Contactor {
 			}
 		}
 	}
-}
 
-// MARK: - Protocols
-
-/// Retrieve all properties in a struct
-protocol IterableProperties {
-	/// Retrieve a dictionary of all properties
+	/// Converts a collection CNContact instances into the desired output format
 	///
-	/// - Returns: Dictionary of properties/values
-	/// - Throws: Error
-	func allProperties() throws -> [String: Any]
+	/// - Parameters:
+	///   - filter: Match filter
+	///   - output: Output directory (if format is "file")
+	///   - format: Output type
+	///   - result: CNContact collection
+	/// - Returns: String representation of "result" collection
+	private func formatSearchResults(filter: String, output: String?, format: String, result: [CNContact]) -> String {
+		var outputString: String = ""
+
+		/// Output data line by line directly to stdout
+		if format == "text" {
+			outputString += "Found \(result.count) contacts matching \"\(filter)\":\n\n"
+
+			for contact in result {
+				let foundContact = ContactRecord(contactInstance: contact)
+				outputString += foundContact.contactToString() + "\n"
+			}
+
+			return outputString
+
+		/// Write output to a VCF file in the passed directory (output parameter)
+		} else if format == "file" {
+			var dir: URL!
+
+			if output == nil {
+				dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+			} else {
+				dir = URL.init(fileURLWithPath: output!)
+			}
+
+			for contact in result {
+				var fileURL = dir.appendingPathComponent("\(contact.givenName) \(contact.familyName).vcf")
+
+				if fileURL.lastPathComponent == " .vcf" {
+					fileURL = dir.appendingPathComponent("\(contact.identifier).vcf")
+				}
+
+				do {
+					try CNContactVCardSerialization
+						.data(jpegPhotoContacts: [contact])
+						.write(to: fileURL, options: [Data.WritingOptions.atomic])
+				} catch let error {
+					print(error)
+				}
+			}
+
+			return "\(result.count) VCF file(s) written to \(dir.path)"
+
+		/// Write output as VCF data to stdout (easily create an aggregate VCF by piping output)
+		} else if format == "vcf" {
+			for contact in result {
+				do {
+					let data = try CNContactVCardSerialization.data(jpegPhotoContacts: [contact])
+					outputString += String(data: data, encoding: .utf8)! + "\n"
+				} catch {}
+			}
+
+			return outputString
+
+		/// Write output to CSV format, written to stdout
+		} else {
+			outputString += ContactRecord.CSVHeader() + "\n"
+
+			for contact in result {
+				let foundContact = ContactRecord(contactInstance: contact)
+				outputString += foundContact.contactToCSV() + "\n"
+			}
+
+			return outputString
+		}
+	}
 }
 
 // MARK: - Extensions
@@ -535,37 +361,5 @@ extension CNContactVCardSerialization {
 			}
 		}
 		return overallData
-	}
-}
-
-/// Extension to loop properties
-extension IterableProperties {
-
-	/// Retrieves a dict of all properties and values
-	///
-	/// - Returns: Dictionary of properties and their values
-	/// - Throws: Error
-	func allProperties() throws -> [String: Any] {
-		var result: [String: String] = [:]
-		let mirror = Mirror(reflecting: self)
-
-		guard let
-			style = mirror.displayStyle,
-			style == .struct ||
-				style == .class else {
-					throw NSError(domain: "hris.to", code: 777, userInfo: nil)
-		}
-
-		for (labelMaybe, valueMaybe) in mirror.children {
-			guard let label = labelMaybe else {
-				continue
-			}
-
-			if let val = valueMaybe as? NSString {
-				result[label] = String.init(val)
-			}
-		}
-
-		return result
 	}
 }

@@ -23,8 +23,14 @@ class SearchCommand: Command {
 	/// Name of command
 	let name = "search"
 
-	/// File output option
-	let dir = Key<String>("-d", "--dir", description: "Write output to individual VCF files in directory <value>")
+	/// Search command's short description
+	let shortDescription = "Search contacts by name"
+
+	/// Dir output option
+	let output = Key<String>("-o", "--output", description: "Write individual VCF files to directory <value>")
+
+	/// Deep output option
+	let deep = Flag("-d", "--deep", description: "Perform a deep search (search against all contact properties)")
 
 	/// Text output option
 	let str = Flag("-t", "--text", description: "Write output to stdout as text (default)")
@@ -37,36 +43,32 @@ class SearchCommand: Command {
 
 	/// Enforcing option group restrictions
 	var optionGroups: [OptionGroup] {
-		return [OptionGroup(options: [dir, str, csv, vcf], restriction: .atMostOne)]
+		return [OptionGroup(options: [output, str, csv, vcf], restriction: .atMostOne)]
 	}
 
 	/// Search command parameters
 	let search = Parameter()
 
-	/// Search command's short description
-	let shortDescription = "Search contacts"
-
 	/// Passes command instructions as options to the ContactorCore instance
 	///
 	/// - Throws: Error
 	func execute() throws {
-		if csv.value {
-			contacts.searchContacts(filter: search.value, format: "csv", completion: { results in
-				print(results)
-			})
+		let deepSearch = self.deep.value ? true : false
+		var outputDir: String? = nil
+		var format: String = "text"
+
+		if (output.value != nil) {
+			outputDir = output.value
+			format = "file"
+		} else if csv.value {
+			format = "csv"
 		} else if vcf.value {
-			contacts.searchContacts(filter: search.value, format: "vcf", completion: { results in
-				print(results)
-			})
-		} else if (dir.value != nil) {
-			contacts.searchContacts(filter: search.value, output: dir.value, format: "file", completion: { results in
-				print(results)
-			})
-		} else {
-			contacts.searchContacts(filter: search.value, format: "text", completion: { results in
-				print(results)
-			})
+			format = "vcf"
 		}
+
+		contacts.searchContacts(filter: search.value, deepSearch: deepSearch, output: outputDir, format: format, completion: { results in
+			self.stdout <<< results
+		})
 	}
 }
 
@@ -76,8 +78,11 @@ class ListCommand: Command {
 	/// Name of command
 	let name = "list"
 
+	/// Seach command's short description
+	let shortDescription = "List all contacts"
+
 	/// File output option
-	let dir = Key<String>("-d", "--dir", description: "Write output to individual VCF files in directory <value>")
+	let output = Key<String>("-o", "--output", description: "Write individual VCF files to directory <value>")
 
 	/// Text output option
 	let str = Flag("-t", "--text", description: "Write output to stdout as text (default)")
@@ -90,33 +95,28 @@ class ListCommand: Command {
 
 	/// Enforcing option group restrictions
 	var optionGroups: [OptionGroup] {
-		return [OptionGroup(options: [dir, str, csv, vcf], restriction: .atMostOne)]
+		return [OptionGroup(options: [output, str, csv, vcf], restriction: .atMostOne)]
 	}
-
-	/// Seach command's short description
-	let shortDescription = "List all contacts"
 
 	/// Passes command instructions as options to the ContactorCore instance
 	///
 	/// - Throws: Error
 	func execute() throws {
-		if csv.value {
-			contacts.searchContacts(format: "csv", completion: { results in
-				print(results)
-			})
+		var outputDir: String? = nil
+		var format: String = "text"
+
+		if (output.value != nil) {
+			outputDir = output.value
+			format = "file"
+		} else if csv.value {
+			format = "csv"
 		} else if vcf.value {
-			contacts.searchContacts(format: "vcf", completion: { results in
-				print(results)
-			})
-		} else if (dir.value != nil) {
-			contacts.searchContacts(output: dir.value, format: "file", completion: { results in
-				print(results)
-			})
-		} else {
-			contacts.searchContacts(format: "text", completion: { results in
-				print(results)
-			})
+			format = "vcf"
 		}
+
+		contacts.searchContacts(output: outputDir, format: format, completion: { results in
+			self.stdout <<< results
+		})
 	}
 }
 
@@ -126,18 +126,21 @@ class ExistsCommand: Command {
 	/// Name of command
 	let name = "exists"
 
-	/// Exists command parameters
-	let search = Parameter()
-
 	/// Exist command's short description
 	let shortDescription = "Check if contact exists"
+
+	/// Deep output option
+	let deep = Flag("-d", "--deep", description: "Perform a deep search (search against all contact properties)")
+
+	/// Exists command parameters
+	let search = Parameter()
 
 	/// Passes command instructions as options to the ContactorCore instance
 	///
 	/// - Throws: Error
 	func execute() throws {
-		contacts.contactExists(filter: search.value, completion: { results in
-			print("\(results)")
+		contacts.contactExists(filter: search.value, deepSearch: deep.value, completion: { results in
+			self.stdout <<< "\(results)"
 		})
 	}
 }
@@ -148,11 +151,11 @@ class RemoveCommand: Command {
 	/// Name of command
 	let name = "remove"
 
-	/// Exists command parameters
-	let identifier = Parameter()
-
 	/// Exist command's short description
 	let shortDescription = "Remove a contact"
+
+	/// Exists command parameters
+	let identifier = Parameter()
 
 	/// Passes command instructions as options to the ContactorCore instance
 	///
@@ -237,7 +240,7 @@ class AddCommand: Command {
 		contacts.addContact(contact: contactProps, completion: { newContactIdentifier in
 			if newContactIdentifier != nil {
 				contacts.searchContacts(filter: newContactIdentifier!, format: "text", completion: { result in
-					print(result)
+					self.stdout <<< result
 				})
 			} else {
 				print("New contact was not created.")

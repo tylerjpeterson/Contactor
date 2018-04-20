@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 VER=$1
+
+OLD=$(egrep -o "([0-9]{1,}\.)+[0-9]{1,}" "Sources/Contactor/main.swift")
+
+sed -i "" s/version\:\ \"$OLD\"/version\:\ \"$VER\"/g "Sources/Contactor/main.swift"
+
 source "bin/build.sh"
 
 cp "/usr/local/bin/Contactor" "releases/"

@@ -5,9 +5,46 @@ Swift module utilizing the [Contacts Framework](https://developer.apple.com/docu
 This module requires the Contacts Framework, and is therefore only supported on macOS version 10.12+.
 
 ## Installation
+Contactor can be installed in one of two ways.
+
+### 1. Install as a command line utility
+The command line executable can be installed via Homebrew.
+
 ```sh
 $ brew tap kettle/homebrew-kettle
 $ brew install Contactor
+```
+
+### 2. Install as a project dependency
+
+To use Contactor's Core functionality, you can include Contactor as a dependency in your project.
+When installed as a dependency, Contactor does not include the module's executable command line interface or its dependencies.
+
+If you're using Cocoapods, add Contactor to your pod list and run `$ pod update`.
+
+```ruby
+platform :osx, '10.13'
+
+target 'YourProject' do
+  use_frameworks!
+
+  pod 'Contactor', :git => 'https://github.com/kettle/Contactor.git'
+end
+```
+
+If you're using Swift Package Manager, add Contactor to your `Package.swift` file and run `$ swift package update`.
+
+```swift
+import PackageDescription
+
+let package = Package(
+	name: "YourProject",
+	dependencies: [
+		.package(url: "https://github.com/kettle/Contactor")
+	],
+	targets: [...]
+)
+
 ```
 
 ## Building from source
@@ -23,8 +60,7 @@ To avoid any issues, it's recommended that you remove any homebrew-installed ver
 $ brew remove Contactor
 ```
 
-
-## Usage
+## Executable usage
 Run the executable without any arguments to output usage options.
 
 ```
@@ -74,11 +110,12 @@ $ Contactor search --help
 Usage: Contactor search <search> [options]
 
 Options:
-  -c, --csv             Write output to stdout in CSV format
-  -d, --dir <value>     Write output to individual VCF files in directory <value>
-  -h, --help            Show help information for this command
-  -t, --text            Write output to stdout as text (default)
-  -v, --vcf             Write output to stdout in VCF format
+  -c, --csv               Write output to stdout in CSV format
+  -d, --deep              Perform a deep search (against all contact properties)
+  -h, --help              Show help information for this command
+  -o, --output <value>    Write individual VCF files to directory <value>
+  -t, --text              Write output to stdout as text (default)
+  -v, --vcf               Write output to stdout in VCF format
 ```
 
 ## Output formats
@@ -101,11 +138,11 @@ $ Contactor list
 
 ### VCF files
 There are two ways to generate VCF files from Contactor.
-The first is to set the "dir" parameter to the directory where you want to save your VCF files.
+The first is to set the "output" parameter to the directory where you want to save your VCF files.
 Contactor will generate a VCF file for each matched contact at that location.
 
 ```
-$ Contactor search -d ~/Desktop "Appleseed"
+$ Contactor search -o ~/Desktop "Appleseed"
 ```
 
 The second approach outputs base-64 encoded VCF data for all matching contacts to stdout.
@@ -117,6 +154,10 @@ Note, this file may be quite large as all Contact photos are written within the 
 ```
 $ Contactor list -v > ~/Desktop/all-contacts.vcf
 ```
+
+## Usage as a module dependency
+...
+
 
 ## Included scripts
 There are a number of shell and ruby scripts in `./bin`.
