@@ -126,7 +126,7 @@ public class Contactor {
 					value: NSString.init(string: parts.last!)))
 			} else {
 				emails.append(CNLabeledValue(
-					label: CNLabelHome,
+					label: "personal",
 					value: NSString.init(string: email)))
 			}
 		}
