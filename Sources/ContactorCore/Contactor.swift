@@ -116,15 +116,35 @@ public class Contactor {
 		var emails: [CNLabeledValue<NSString>] = []
 
 		for email in emailAddresses {
-			emails.append(CNLabeledValue(
-				label: CNLabelHome,
-				value: NSString.init(string: email)))
+			if email.contains(":") {
+				let parts = email.split(separator: ":").map({ (address) -> String in
+					return address.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+				})
+
+				emails.append(CNLabeledValue(
+					label: parts.first!,
+					value: NSString.init(string: parts.last!)))
+			} else {
+				emails.append(CNLabeledValue(
+					label: CNLabelHome,
+					value: NSString.init(string: email)))
+			}
 		}
 
 		for number in phoneNumbers {
-			numbers.append(CNLabeledValue(
-				label: CNLabelPhoneNumberiPhone,
-				value: CNPhoneNumber(stringValue: number)))
+			if number.contains(":") {
+				let parts = number.split(separator: ":").map({ (phone) -> String in
+					return phone.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+				})
+
+				numbers.append(CNLabeledValue(
+					label: parts.first!,
+					value: CNPhoneNumber(stringValue: parts.last!)))
+			} else {
+				numbers.append(CNLabeledValue(
+					label: CNLabelPhoneNumberiPhone,
+					value: CNPhoneNumber(stringValue: number)))
+			}
 		}
 
 		newContact.givenName = contact["first"]!
