@@ -62,12 +62,22 @@ public class Contactor {
 	public func searchContactRecords(filter: String = "*", deepSearch: Bool = false, completion: @escaping (_ results: [ContactRecord]) -> Void) {
 		var contactRecords: [ContactRecord] = []
 
-		self.findContacts(matching: filter) {(result: [CNContact]?) in
-			for contact in result! {
-				contactRecords.append(ContactRecord(contactInstance: contact))
-			}
+		if deepSearch {
+			self.findContactsDeep(matching: filter) {(result: [CNContact]?) in
+				for contact in result! {
+					contactRecords.append(ContactRecord(contactInstance: contact))
+				}
 
-			completion(contactRecords)
+				completion(contactRecords)
+			}
+		} else {
+			self.findContacts(matching: filter) {(result: [CNContact]?) in
+				for contact in result! {
+					contactRecords.append(ContactRecord(contactInstance: contact))
+				}
+
+				completion(contactRecords)
+			}
 		}
 	}
 
