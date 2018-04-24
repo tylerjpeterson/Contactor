@@ -213,6 +213,12 @@ class AddCommand: Command {
 	/// Contact's month of birth
 	let birthmonth = Key<String>("-m", "--birthmonth", description: "Contact birth month")
 
+	/// Contact's company
+	let company = Key<String>("-o", "--company", description: "Contact's company")
+
+	/// Contact's title
+	let title = Key<String>("-i", "--title", description: "Contact's title")
+
 	/// Requires command is provided with at least a first or last name for the new contact
 	var optionGroups: [OptionGroup] {
 		return [OptionGroup(options: [first, last], restriction: .atLeastOne)]
@@ -236,6 +242,8 @@ class AddCommand: Command {
 		contactProps["pic"] = pic.value ?? ""
 		contactProps["birthday"] = birthday.value ?? ""
 		contactProps["birthmonth"] = birthmonth.value ?? ""
+		contactProps["company"] = company.value ?? ""
+		contactProps["title"] = title.value ?? ""
 
 		contacts.addContact(contact: contactProps, completion: { newContactIdentifier in
 			if newContactIdentifier != nil {

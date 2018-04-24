@@ -147,6 +147,8 @@ public class Contactor {
 			}
 		}
 
+		newContact.jobTitle = contact["title"]!
+		newContact.organizationName = contact["company"]!
 		newContact.givenName = contact["first"]!
 		newContact.familyName = contact["last"]!
 		newContact.emailAddresses = emails
