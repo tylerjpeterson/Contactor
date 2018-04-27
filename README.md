@@ -64,6 +64,8 @@ $ brew remove Contactor
 Run the executable without any arguments to output usage options.
 
 ```
+$ Contactor
+
 Usage: Contactor <command> [options]
 
 Contactor - manage contacts via the command line
@@ -72,7 +74,7 @@ Commands:
   add             Add a contact
   list            List all contacts
   exists          Check if contact exists
-  search          Search contacts
+  search          Search contacts by name
   remove          Remove a contact
   help            Prints this help information
   version         Prints the current version of this app
@@ -86,23 +88,23 @@ $ Contactor add --help
 Usage: Contactor add [options]
 
 Options:
-  -a, --street <value>        Contact street address
-  -b, --birthday <value>      Contact birth day
-  -c, --city <value>          Contact city
-  -e, --email <value>         Email addresses (separated by ',')
-  -f, --first <value>         Contact first name
+  -a, --street <value>        Contact's street address
+  -b, --birthday <value>      Contact's day of birth as an integer (1 - 31)
+  -c, --city <value>          Contact's city of residence
+  -e, --email <value>         Contact's email addresses separated by commas, optionally labeled as `<label>:<address>`
+  -f, --first <value>         Contact's first (given) name
   -h, --help                  Show help information for this command
-  -l, --last <value>          Contact last name
-  -m, --birthmonth <value>    Contact birth month
-  -p, --pic <value>           Contact photo
-  -s, --state <value>         Contact state
-  -t, --telephone <value>     Phone numbers (seperated by ',')
-  -z, --zip <value>           Contact zip code
+  -i, --title <value>         Contact's title
+  -l, --last <value>          Contact's last (family) name
+  -m, --birthmonth <value>    Contact's birth month as an integer (1 - January, 12 - December)
+  -o, --company <value>       Contact's company / organization
+  -p, --pic <value>           The path to a photo of Contact (local file)
+  -s, --state <value>         Contact's state of residence
+  -t, --telephone <value>     Contact's phone numbers separated by commas, optionally labeled as `<label>:<number>`
+  -z, --zip <value>           Contact's zip code
 
 Must pass at least one of the following: --first --last
 ```
-
-Another example...
 
 ```
 $ Contactor search --help
@@ -111,11 +113,20 @@ Usage: Contactor search <search> [options]
 
 Options:
   -c, --csv               Write output to stdout in CSV format
-  -d, --deep              Perform a deep search (against all contact properties)
+  -d, --deep              Perform a deep search (search against all contact properties)
   -h, --help              Show help information for this command
   -o, --output <value>    Write individual VCF files to directory <value>
   -t, --text              Write output to stdout as text (default)
   -v, --vcf               Write output to stdout in VCF format
+```
+
+## Searching with the executable
+By default, searches will be "shallow", meaning they will use a predicate that only matches "names" (given name, nickname, family name).
+This is the only predicate the Contacts framework allows for, but by using the `--deep` flag, Contactor will retrieve all contacts and filter out those matching your search term across all contact properties.
+For example, to retrieve all contacts with an "@wearekettle.com" email address and save them to a CSV:
+
+```
+$ Contactor search -d "@wearekettle.com" -c > "wearekettle.csv"
 ```
 
 ## Output formats
@@ -156,8 +167,24 @@ $ Contactor list -v > ~/Desktop/all-contacts.vcf
 ```
 
 ## Usage as a module dependency
-...
+Once installed as a dependency (see above), you can import and instantiate the Contactor class.
 
+```swift
+import Contactor
+
+/// Somewhere in your code
+let contactor = Contactor.init()
+```
+
+You can then call any of Contactor's public methods to interface with the user's contacts.
+
+```swift
+contactor.searchContactRecords(filter: "someemailaddress.com", deepSearch: true, completion: { (contactRecords) in
+	for contactRecord in ContactRecords {
+		print(contactRecord.givenName)
+	}
+})
+```
 
 ## Included scripts
 There are a number of shell and ruby scripts in `./bin`.

@@ -78,7 +78,7 @@ class ListCommand: Command {
 	/// Name of command
 	let name = "list"
 
-	/// Seach command's short description
+	/// List command's short description
 	let shortDescription = "List all contacts"
 
 	/// File output option
@@ -151,10 +151,10 @@ class RemoveCommand: Command {
 	/// Name of command
 	let name = "remove"
 
-	/// Exist command's short description
+	/// Remove command's short description
 	let shortDescription = "Remove a contact"
 
-	/// Exists command parameters
+	/// Remove command parameters
 	let identifier = Parameter()
 
 	/// Passes command instructions as options to the ContactorCore instance
@@ -181,40 +181,40 @@ class AddCommand: Command {
 	let shortDescription = "Add a contact"
 
 	/// Contact's first name
-	let first = Key<String>("-f", "--first", description: "Contact first name")
+	let first = Key<String>("-f", "--first", description: "Contact's first (given) name")
 
 	/// Contact's last name
-	let last = Key<String>("-l", "--last", description: "Contact last name")
+	let last = Key<String>("-l", "--last", description: "Contact's last (family) name")
 
 	/// Contact's street address
-	let street = Key<String>("-a", "--street", description: "Contact street address")
+	let street = Key<String>("-a", "--street", description: "Contact's street address")
 
 	/// Contact's city
-	let city = Key<String>("-c", "--city", description: "Contact city")
+	let city = Key<String>("-c", "--city", description: "Contact's city of residence")
 
 	/// Contact's state
-	let state = Key<String>("-s", "--state", description: "Contact state")
+	let state = Key<String>("-s", "--state", description: "Contact's state of residence")
 
 	/// Contact's zip code
-	let zip = Key<String>("-z", "--zip", description: "Contact zip code")
+	let zip = Key<String>("-z", "--zip", description: "Contact's zip code")
 
-	/// Contact's telephone number
-	let telephone = Key<String>("-t", "--telephone", description: "Phone numbers (seperated by ',')")
+	/// Contact's telephone numbers (separate multiple numbers with a comma, add a label by prefixing it to the value separated by a colon)
+	let telephone = Key<String>("-t", "--telephone", description: "Contact's phone numbers separated by commas, optionally labeled as `<label>:<number>`")
 
-	/// Contact's email address (separate multiple addresses with a comma)
-	let email = Key<String>("-e", "--email", description: "Email addresses (separated by ',')")
+	/// Contact's email address (separate multiple addresses with a comma, add a label by prefixing it to the value separated by a colon)
+	let email = Key<String>("-e", "--email", description: "Contact's email addresses separated by commas, optionally labeled as `<label>:<address>`")
 
 	/// Path to an image of the contact
-	let pic = Key<String>("-p", "--pic", description: "Contact photo")
+	let pic = Key<String>("-p", "--pic", description: "The path to a photo of Contact (local file)")
 
 	/// Contact's day of birth
-	let birthday = Key<String>("-b", "--birthday", description: "Contact birth day")
+	let birthday = Key<String>("-b", "--birthday", description: "Contact's day of birth as an integer (1 - 31)")
 
 	/// Contact's month of birth
-	let birthmonth = Key<String>("-m", "--birthmonth", description: "Contact birth month")
+	let birthmonth = Key<String>("-m", "--birthmonth", description: "Contact's birth month as an integer (1 - January, 12 - December)")
 
 	/// Contact's company
-	let company = Key<String>("-o", "--company", description: "Contact's company")
+	let company = Key<String>("-o", "--company", description: "Contact's company / organization")
 
 	/// Contact's title
 	let title = Key<String>("-i", "--title", description: "Contact's title")
