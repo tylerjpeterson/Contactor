@@ -266,16 +266,22 @@ public class Contactor {
 
 			if groups.count > 0 {
 				let contacts: [CNContact] = try self.store.unifiedContacts(matching: contactPredicate, keysToFetch: keysToFetch)
+				let total: Int = contacts.count
+				var done: Int = 0
 
 				for contact in contacts {
 					let mutable: CNMutableContact = contact.mutableCopy() as! CNMutableContact
 					request.delete(mutable)
 					try self.store.execute(request)
-				}
 
-				request.delete(groups.first?.mutableCopy() as! CNMutableGroup)
-				try self.store.execute(request)
-				completion(true)
+					done += 1
+
+					if done >= total {
+						request.delete(groups.first?.mutableCopy() as! CNMutableGroup)
+						try self.store.execute(request)
+						completion(true)
+					}
+				}
 			} else {
 				completion(false)
 			}
