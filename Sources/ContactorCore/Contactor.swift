@@ -200,7 +200,7 @@ public class Contactor {
 		saveRequest.add(newContact, toContainerWithIdentifier: nil)
 
 		do {
-			if groupId.trim().count > 0 {
+			if groupId.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 {
 				let groupPredicate: NSPredicate = CNGroup.predicateForGroups(withIdentifiers: [groupId])
 				let contactGroup = try self.store.groups(matching: groupPredicate)
 
