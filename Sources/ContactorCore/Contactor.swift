@@ -34,6 +34,33 @@ public class Contactor {
 		}
 	}
 
+	public func createGroup(name: String = "New Group") -> CNGroup? {
+		do {
+			let groups = try self.store.groups(matching: nil)
+			let filteredGroups = groups.filter { $0.name == name }
+
+			if filteredGroups.count > 0 {
+				return filteredGroups[0]
+			}
+
+			let newGroup = CNMutableGroup()
+			let saveRequest = CNSaveRequest()
+
+			newGroup.name = name
+			saveRequest.add(newGroup, toContainerWithIdentifier: nil)
+
+			do {
+				try self.store.execute(saveRequest)
+				return newGroup
+			} catch let error {
+				print(error.localizedDescription)
+				return nil
+			}
+		} catch {
+			return nil
+		}
+	}
+
 	/// Search user contacts against a filter, and optionally export the results as a collection of VCFs
 	///
 	/// - Parameters:
@@ -104,7 +131,7 @@ public class Contactor {
 	/// - Parameters:
 	///   - contact: Dictionary of properties and values used to create the contact
 	///   - completion: Completion handler passing the newly created CNContact's identifier
-	public func addContact(contact: [String: String], completion: @escaping (_ createdContactIdentifier: String?) -> Void) {
+	public func addContact(contact: [String: String], groupId: String = "", completion: @escaping (_ createdContactIdentifier: String?) -> Void) {
 		let saveRequest = CNSaveRequest()
 		let newContact = CNMutableContact()
 		let homeAddress = CNMutablePostalAddress()
@@ -173,6 +200,15 @@ public class Contactor {
 		saveRequest.add(newContact, toContainerWithIdentifier: nil)
 
 		do {
+			if groupId.count > 0 {
+				let groupPredicate: NSPredicate = CNGroup.predicateForGroups(withIdentifiers: [groupId])
+				let contactGroup = try self.store.groups(matching: groupPredicate)
+
+				if (contactGroup.first != nil) {
+					saveRequest.addMember(newContact, to: contactGroup.first!)
+				}
+			}
+
 			try self.store.execute(saveRequest)
 			completion(newContact.identifier)
 		} catch {

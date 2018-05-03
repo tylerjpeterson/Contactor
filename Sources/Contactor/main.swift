@@ -219,6 +219,9 @@ class AddCommand: Command {
 	/// Contact's title
 	let title = Key<String>("-i", "--title", description: "Contact's title")
 
+	/// Contact's group
+	let group = Key<String>("-g", "--group", description: "Group to add Contact to")
+
 	/// Requires command is provided with at least a first or last name for the new contact
 	var optionGroups: [OptionGroup] {
 		return [OptionGroup(options: [first, last], restriction: .atLeastOne)]
@@ -245,7 +248,7 @@ class AddCommand: Command {
 		contactProps["company"] = company.value ?? ""
 		contactProps["title"] = title.value ?? ""
 
-		contacts.addContact(contact: contactProps, completion: { newContactIdentifier in
+		contacts.addContact(contact: contactProps, groupId: group.value ?? "", completion: { newContactIdentifier in
 			if newContactIdentifier != nil {
 				contacts.searchContacts(filter: newContactIdentifier!, format: "text", completion: { result in
 					self.stdout <<< result
@@ -257,12 +260,34 @@ class AddCommand: Command {
 	}
 }
 
+/// Create Group command - creates and adds a new contact
+class CreateGroupCommand: Command {
+
+	/// Name of command
+	let name = "createGroup"
+
+	/// Add command's short description
+	let shortDescription = "Create a new contact group"
+
+	/// Search command parameters
+	let groupName = Parameter()
+
+	/// Passes command instructions to the ContactorCore instance, creating a new Contact group
+	///
+	/// - Throws: Error
+	func execute() throws {
+		let group = contacts.createGroup(name: groupName.value)
+		self.stdout <<< group?.identifier ?? ""
+	}
+}
+
 cli.commands = [
 	AddCommand(),
 	ListCommand(),
 	ExistsCommand(),
 	SearchCommand(),
-	RemoveCommand()
+	RemoveCommand(),
+	CreateGroupCommand()
 ]
 
 cli.goAndExit()
