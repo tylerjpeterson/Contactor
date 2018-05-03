@@ -61,6 +61,20 @@ public class Contactor {
 		}
 	}
 
+	public func searchGroups(filter: String = "*", completion: @escaping (_ results: [CNGroup]) -> Void) {
+		do {
+			let groups: [CNGroup] = try self.store.groups(matching: nil)
+
+			if filter == "*" {
+				completion(groups)
+			} else {
+				completion(groups.filter { $0.name.lowercased() == filter.lowercased() })
+			}
+		} catch {
+			completion([])
+		}
+	}
+
 	/// Search user contacts against a filter, and optionally export the results as a collection of VCFs
 	///
 	/// - Parameters:
@@ -223,10 +237,7 @@ public class Contactor {
 	///   - id: Identifier of contact to be removed
 	///   - completion: Completion handler passed true on success, false on failure
 	public func removeContact(id: String, completion: @escaping (_ result: Bool) -> Void) {
-		let keysToFetch: [CNKeyDescriptor] = [
-			CNContactImageDataKey as CNKeyDescriptor,
-			CNContactVCardSerialization.descriptorForRequiredKeys()
-		]
+		let keysToFetch: [CNKeyDescriptor] = [CNContactGivenNameKey as CNKeyDescriptor]
 
 		do {
 			let request: CNSaveRequest = CNSaveRequest()
@@ -238,6 +249,36 @@ public class Contactor {
 			request.delete(mutable)
 			try self.store.execute(request)
 			completion(true)
+		} catch {
+			print("Error removing contact: \(error)")
+			completion(false)
+		}
+	}
+
+	public func removeGroup(id: String, completion: @escaping (_ result: Bool) -> Void) {
+		let keysToFetch: [CNKeyDescriptor] = [CNContactGivenNameKey as CNKeyDescriptor]
+		let groupPredicate: NSPredicate = CNGroup.predicateForGroups(withIdentifiers: [id])
+		let contactPredicate: NSPredicate = CNContact.predicateForContactsInGroup(withIdentifier: id)
+
+		do {
+			let request: CNSaveRequest = CNSaveRequest()
+			let groups: [CNGroup]! = try self.store.groups(matching: groupPredicate)
+
+			if groups.count > 0 {
+				let contacts: [CNContact] = try self.store.unifiedContacts(matching: contactPredicate, keysToFetch: keysToFetch)
+
+				for contact in contacts {
+					let mutable: CNMutableContact = contact.mutableCopy() as! CNMutableContact
+					request.delete(mutable)
+					try self.store.execute(request)
+				}
+
+				request.delete(groups.first?.mutableCopy() as! CNMutableGroup)
+				try self.store.execute(request)
+				completion(true)
+			} else {
+				completion(false)
+			}
 		} catch {
 			print("Error removing contact: \(error)")
 			completion(false)

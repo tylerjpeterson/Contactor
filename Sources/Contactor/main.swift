@@ -281,13 +281,88 @@ class CreateGroupCommand: Command {
 	}
 }
 
+/// Delete Group command - removes a group and all of its Contacts
+class DeleteGroupCommand: Command {
+
+	/// Name of command
+	let name = "deleteGroup"
+
+	/// Add command's short description
+	let shortDescription = "Delete a group and all of its Contacts"
+
+	/// Search command parameters
+	let groupId = Parameter()
+
+	/// Passes command instructions to the ContactorCore instance, creating a new Contact group
+	///
+	/// - Throws: Error
+	func execute() throws {
+		contacts.removeGroup(id: groupId.value, completion: { result in
+			self.stdout <<< result ? "Group was removed." : "Group was not removed."
+		})
+	}
+}
+
+/// Search Groups command - searches contacts against provided criteria with an option to export all results to VCF files
+class SearchGroups: Command {
+
+	/// Name of command
+	let name = "searchGroups"
+
+	/// Search Groups command's short description
+	let shortDescription = "Search groups by name"
+
+	/// Search command parameters
+	let search = Parameter()
+
+	/// Passes command instructions as options to the ContactorCore instance
+	///
+	/// - Throws: Error
+	func execute() throws {
+		contacts.searchGroups(filter: search.value, completion: { results in
+			for result in results {
+				self.stdout <<< "\(result.identifier)"
+			}
+		})
+	}
+}
+
+/// List Groups command - lists all Contact Groups
+class ListGroups: Command {
+
+	/// Name of command
+	let name = "listGroups"
+
+	/// List Groups command's short description
+	let shortDescription = "List groups by name"
+
+	/// Passes command instructions as options to the ContactorCore instance
+	///
+	/// - Throws: Error
+	func execute() throws {
+		contacts.searchGroups(completion: { results in
+			var output: String = ""
+
+			for result in results {
+				output += "name: \(result.name)\n"
+				output += "identifier: \(result.identifier)\n\n"
+			}
+
+			self.stdout <<< output
+		})
+	}
+}
+
 cli.commands = [
 	AddCommand(),
 	ListCommand(),
 	ExistsCommand(),
 	SearchCommand(),
 	RemoveCommand(),
-	CreateGroupCommand()
+	ListGroups(),
+	SearchGroups(),
+	CreateGroupCommand(),
+	DeleteGroupCommand()
 ]
 
 cli.goAndExit()
