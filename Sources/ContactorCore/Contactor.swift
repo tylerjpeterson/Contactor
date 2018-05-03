@@ -201,10 +201,10 @@ public class Contactor {
 
 		do {
 			if groupId.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 {
-				let groupPredicate: NSPredicate = CNGroup.predicateForGroups(withIdentifiers: [groupId])
-				let contactGroup = try self.store.groups(matching: groupPredicate)
+				let groupIdentifierPredicate: NSPredicate = CNGroup.predicateForGroups(withIdentifiers: [groupId])
+				let contactGroup = try self.store.groups(matching: groupIdentifierPredicate)
 
-				if (contactGroup.first != nil) {
+				if (contactGroup.count > 0) {
 					saveRequest.addMember(newContact, to: contactGroup.first!)
 				}
 			}
