@@ -2,6 +2,7 @@
 > Manage contacts from the command line via the macOS Contacts framework.
 
 Swift module utilizing the [Contacts Framework](https://developer.apple.com/documentation/contacts) to search, add, remove and export contacts in various formats (VCF, text, CSV).
+It also allows for the creation of new Contact Groups, and the removal of existing Contact Groups (including all Contacts within the Group).
 This module requires the Contacts Framework, and is therefore only supported on macOS version 10.12+.
 
 ## Installation
@@ -76,6 +77,10 @@ Commands:
   exists          Check if contact exists
   search          Search contacts by name
   remove          Remove a contact
+  listGroups      List groups by name
+  searchGroups    Search groups by name
+  createGroup     Create a new contact group
+  deleteGroup     Delete a group and all of its Contacts
   help            Prints this help information
   version         Prints the current version of this app
 ```

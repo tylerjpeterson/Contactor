@@ -123,31 +123,37 @@ public struct ContactRecord: IterableProperties {
 			self.thumbnailImageData = contactInstance.thumbnailImageData
 		}
 
-		self.phoneNumbers = "\n"
-		self.emailAddresses = "\n"
-		self.urlAddresses = "\n"
-		self.socialProfiles = "\n"
-		self.instantMessageAddresses = "\n"
+		var phoneNumbers: [String] = []
+		var emailAddresses: [String] = []
+		var urlAddresses: [String] = []
+		var socialProfiles: [String] = []
+		var instantMessageAddresses: [String] = []
 
 		for num in contactInstance.phoneNumbers {
-			self.phoneNumbers = self.phoneNumbers + "\(num.label?.description ?? ""): \(num.value.stringValue)\n"
+			phoneNumbers.append("\(num.label?.description ?? ""): \(num.value.stringValue)")
 		}
 
 		for num in contactInstance.emailAddresses {
-			self.emailAddresses = self.emailAddresses + "\(num.label?.description ?? ""): \(num.value)\n"
+			emailAddresses.append("\(num.label?.description ?? ""): \(num.value)")
 		}
 
 		for num in contactInstance.urlAddresses {
-			self.urlAddresses = self.urlAddresses + "\(num.label?.description ?? ""): \(num.value)\n"
+			urlAddresses.append("\(num.label?.description ?? ""): \(num.value)")
 		}
 
 		for num in contactInstance.socialProfiles {
-			self.socialProfiles = self.socialProfiles + "\(num.label?.description ?? ""): \(num.value)\n"
+			socialProfiles.append("\(num.label?.description ?? ""): \(num.value)")
 		}
 
 		for num in contactInstance.instantMessageAddresses {
-			self.instantMessageAddresses = self.instantMessageAddresses + "\(num.value.username)\n"
+			instantMessageAddresses.append("\(num.value.username)")
 		}
+
+		self.phoneNumbers = phoneNumbers.joined(separator: "\n")
+		self.emailAddresses = emailAddresses.joined(separator: "\n")
+		self.urlAddresses = urlAddresses.joined(separator: "\n")
+		self.socialProfiles = socialProfiles.joined(separator: "\n")
+		self.instantMessageAddresses = instantMessageAddresses.joined(separator: "\n")
 	}
 
 	/// Converts a contact's properties to a string

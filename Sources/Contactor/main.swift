@@ -23,7 +23,7 @@ class SearchCommand: Command {
 	/// Name of command
 	let name = "search"
 
-	/// Search command's short description
+	/// Short description
 	let shortDescription = "Search contacts by name"
 
 	/// Dir output option
@@ -78,7 +78,7 @@ class ListCommand: Command {
 	/// Name of command
 	let name = "list"
 
-	/// List command's short description
+	/// Short description
 	let shortDescription = "List all contacts"
 
 	/// File output option
@@ -126,7 +126,7 @@ class ExistsCommand: Command {
 	/// Name of command
 	let name = "exists"
 
-	/// Exist command's short description
+	/// Short description
 	let shortDescription = "Check if contact exists"
 
 	/// Deep output option
@@ -151,7 +151,7 @@ class RemoveCommand: Command {
 	/// Name of command
 	let name = "remove"
 
-	/// Remove command's short description
+	/// Short description
 	let shortDescription = "Remove a contact"
 
 	/// Remove command parameters
@@ -177,7 +177,7 @@ class AddCommand: Command {
 	/// Name of command
 	let name = "add"
 
-	/// Add command's short description
+	/// Short description
 	let shortDescription = "Add a contact"
 
 	/// Contact's first name
@@ -260,16 +260,16 @@ class AddCommand: Command {
 	}
 }
 
-/// Create Group command - creates and adds a new contact
+/// Create Group command - creates and adds a new contact group
 class CreateGroupCommand: Command {
 
 	/// Name of command
 	let name = "createGroup"
 
-	/// Add command's short description
+	/// Short description
 	let shortDescription = "Create a new contact group"
 
-	/// Search command parameters
+	/// Name of group to create
 	let groupName = Parameter()
 
 	/// Passes command instructions to the ContactorCore instance, creating a new Contact group
@@ -281,19 +281,19 @@ class CreateGroupCommand: Command {
 	}
 }
 
-/// Delete Group command - removes a group and all of its Contacts
+/// Delete Group command - removes a Group and all of its Contacts
 class DeleteGroupCommand: Command {
 
 	/// Name of command
 	let name = "deleteGroup"
 
-	/// Add command's short description
+	/// Short description
 	let shortDescription = "Delete a group and all of its Contacts"
 
-	/// Search command parameters
+	/// ID of group to remove
 	let groupId = Parameter()
 
-	/// Passes command instructions to the ContactorCore instance, creating a new Contact group
+	/// Passes command instructions to the ContactorCore instance, creating a new Contact Group
 	///
 	/// - Throws: Error
 	func execute() throws {
@@ -303,13 +303,13 @@ class DeleteGroupCommand: Command {
 	}
 }
 
-/// Search Groups command - searches contacts against provided criteria with an option to export all results to VCF files
+/// Search Groups command - a collection of Group identifiers filtered against a search term
 class SearchGroups: Command {
 
 	/// Name of command
 	let name = "searchGroups"
 
-	/// Search Groups command's short description
+	/// Short description
 	let shortDescription = "Search groups by name"
 
 	/// Search command parameters
@@ -327,13 +327,13 @@ class SearchGroups: Command {
 	}
 }
 
-/// List Groups command - lists all Contact Groups
+/// List Groups command - lists all Contact Groups as a collection of Group identifiers
 class ListGroups: Command {
 
 	/// Name of command
 	let name = "listGroups"
 
-	/// List Groups command's short description
+	/// Short description
 	let shortDescription = "List groups by name"
 
 	/// Passes command instructions as options to the ContactorCore instance

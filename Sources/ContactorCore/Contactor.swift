@@ -255,6 +255,11 @@ public class Contactor {
 		}
 	}
 
+	/// Remove a group and all of its contacts
+	///
+	/// - Parameters:
+	///   - id: Identifier of the group to be removed
+	///   - completion: Completion handler with boolean indicating if removal was successful
 	public func removeGroup(id: String, completion: @escaping (_ result: Bool) -> Void) {
 		let keysToFetch: [CNKeyDescriptor] = [CNContactGivenNameKey as CNKeyDescriptor]
 		let groupPredicate: NSPredicate = CNGroup.predicateForGroups(withIdentifiers: [id])
@@ -273,7 +278,6 @@ public class Contactor {
 					let mutable: CNMutableContact = contact.mutableCopy() as! CNMutableContact
 					request.delete(mutable)
 					try self.store.execute(request)
-
 					done += 1
 
 					if done >= total {
@@ -291,6 +295,29 @@ public class Contactor {
 		}
 	}
 
+	/// Retrieves a collection of ContactRecords representing all CNContacts within the specified CNGroup
+	///
+	/// - Parameters:
+	///   - groupId: Target group's identifier
+	///   - completion: Completion handler with matching ContactRecords
+	public func getContactsInGroup(groupId: String, completion: @escaping (_ contacts: [ContactRecord]) -> Void) {
+		let contactPredicate: NSPredicate = CNContact.predicateForContactsInGroup(withIdentifier: groupId)
+		let keysToFetch: [CNKeyDescriptor] = [CNContactImageDataKey as CNKeyDescriptor, CNContactVCardSerialization.descriptorForRequiredKeys()]
+		var results: [ContactRecord] = []
+
+		do {
+			let contacts: [CNContact] = try self.store.unifiedContacts(matching: contactPredicate, keysToFetch: keysToFetch)
+
+			for contact in contacts {
+				results.append(ContactRecord(contactInstance: contact))
+			}
+		} catch let error {
+			print(error)
+		}
+
+		completion(results)
+	}
+
 	/// Method to search contacts setting "matching" param as the matchingName predicate
 	///
 	/// - Parameters:
@@ -299,6 +326,7 @@ public class Contactor {
 	public func findContacts(matching: String, completion: @escaping (_ result: [CNContact]) -> Void) {
 		let namePredicate: NSPredicate = CNContact.predicateForContacts(matchingName: matching)
 		let identifierPredicate: NSPredicate = CNContact.predicateForContacts(withIdentifiers: [matching])
+		var contacts: [CNContact] = []
 
 		let keysToFetch: [CNKeyDescriptor] = [
 			CNContactImageDataKey as CNKeyDescriptor,
@@ -306,16 +334,16 @@ public class Contactor {
 		]
 
 		do {
-			var contacts: [CNContact] = try store.unifiedContacts(matching: namePredicate, keysToFetch: keysToFetch)
+			contacts = try store.unifiedContacts(matching: namePredicate, keysToFetch: keysToFetch)
 
 			if contacts.count < 1 {
 				contacts = try store.unifiedContacts(matching: identifierPredicate, keysToFetch: keysToFetch)
 			}
-
-			completion(contacts)
 		} catch let error as NSError {
 			print(error.localizedDescription)
 		}
+
+		completion(contacts)
 	}
 
 	/// Method to retrieve all contacts with a property value matching "matching"
