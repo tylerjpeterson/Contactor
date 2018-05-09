@@ -243,12 +243,17 @@ public class Contactor {
 			let request: CNSaveRequest = CNSaveRequest()
 			let identifierPredicate: NSPredicate = CNContact.predicateForContacts(withIdentifiers: [id])
 			let contacts: [CNContact] = try store.unifiedContacts(matching: identifierPredicate, keysToFetch: keysToFetch)
-			let contact: CNContact! = contacts.first
-			let mutable: CNMutableContact = contact.mutableCopy() as! CNMutableContact
 
-			request.delete(mutable)
-			try self.store.execute(request)
-			completion(true)
+			if contacts.count > 0 {
+				let contact: CNContact! = contacts.first
+				let mutable: CNMutableContact = contact.mutableCopy() as! CNMutableContact
+
+				request.delete(mutable)
+				try self.store.execute(request)
+				completion(true)
+			} else {
+				completion(false)
+			}
 		} catch {
 			print("Error removing contact: \(error)")
 			completion(false)
