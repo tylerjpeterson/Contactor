@@ -361,6 +361,20 @@ public class Contactor {
 		completion(results)
 	}
 
+	public func getContactsInGroupAsCNContacts(groupId: String, completion: @escaping (_ contacts: [CNContact]) -> Void) {
+		let contactPredicate: NSPredicate = CNContact.predicateForContactsInGroup(withIdentifier: groupId)
+		let keysToFetch: [CNKeyDescriptor] = [CNContactImageDataKey as CNKeyDescriptor, CNContactVCardSerialization.descriptorForRequiredKeys()]
+		var results: [CNContact] = []
+
+		do {
+			results = try self.store.unifiedContacts(matching: contactPredicate, keysToFetch: keysToFetch)
+		} catch let error {
+			print(error)
+		}
+
+		completion(results)
+	}
+
 	/// Method to search contacts setting "matching" param as the matchingName predicate
 	///
 	/// - Parameters:
