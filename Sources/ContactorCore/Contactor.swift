@@ -19,6 +19,8 @@ public class Contactor {
 	/// Flag set to record whether or not access to contacts has been granted
 	var hasPermission: Bool = false
 
+	var iCloudIdentifier: String?
+
 	/// Initializes a new Contactor instance
 	public init() {
 		store.requestAccess(for: CNEntityType.contacts) {granted, error in
@@ -30,6 +32,17 @@ public class Contactor {
 				exit(0)
 			} else {
 				self.hasPermission = true
+				do {
+					let containers = try self.store.containers(matching: nil)
+					for container in containers {
+						if container.name == "iCloud" {
+							self.iCloudIdentifier = container.identifier
+							break
+						}
+					}
+				} catch let err {
+					print(err)
+				}
 			}
 		}
 	}
@@ -95,6 +108,20 @@ public class Contactor {
 		}
 	}
 
+	public func updateContact(existing: CNContact, contact: [String: String], completion: @escaping (_ result: Bool) -> Void) {
+		let newContact = self.parseContact(contact: contact, existing: existing)
+		let saveRequest = CNSaveRequest()
+		saveRequest.update(newContact)
+
+		do {
+			try self.store.execute(saveRequest)
+			completion(true)
+		} catch let err {
+			print(err)
+			completion(false)
+		}
+	}
+
 	/// Search user contacts against a filter, returning ContactRecord instances
 	///
 	/// - Parameters:
@@ -140,19 +167,19 @@ public class Contactor {
 		}
 	}
 
-	/// Adds a contact to the user's default contact group
-	///
-	/// - Parameters:
-	///   - contact: Dictionary of properties and values used to create the contact
-	///   - completion: Completion handler passing the newly created CNContact's identifier
-	public func addContact(contact: [String: String], groupId: String = "", completion: @escaping (_ createdContactIdentifier: String?) -> Void) {
-		let saveRequest = CNSaveRequest()
-		let newContact = CNMutableContact()
+	private func parseContact(contact: [String: String], existing: CNContact? = nil) -> CNMutableContact {
+		var newContact: CNMutableContact
+
+		if existing != nil {
+			newContact = existing?.mutableCopy() as! CNMutableContact
+		} else {
+			newContact = CNMutableContact()
+		}
+
 		let homeAddress = CNMutablePostalAddress()
 		let birthday = NSDateComponents()
 		let emailAddresses = contact["email"]?.components(separatedBy: ",") ?? [""]
 		let phoneNumbers = contact["phone"]?.components(separatedBy: ",") ?? [""]
-
 		var numbers: [CNLabeledValue<CNPhoneNumber>] = []
 		var emails: [CNLabeledValue<NSString>] = []
 
@@ -211,7 +238,18 @@ public class Contactor {
 			newContact.imageData = data! as Data
 		}
 
-		saveRequest.add(newContact, toContainerWithIdentifier: nil)
+		return newContact
+	}
+
+	/// Adds a contact to the user's default contact group
+	///
+	/// - Parameters:
+	///   - contact: Dictionary of properties and values used to create the contact
+	///   - completion: Completion handler passing the newly created CNContact's identifier
+	public func addContact(contact: [String: String], groupId: String = "", completion: @escaping (_ createdContactIdentifier: String?) -> Void) {
+		let saveRequest = CNSaveRequest()
+		let newContact = self.parseContact(contact: contact)
+		saveRequest.add(newContact, toContainerWithIdentifier: self.iCloudIdentifier)
 
 		do {
 			if groupId.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 {
