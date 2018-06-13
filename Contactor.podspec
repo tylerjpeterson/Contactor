@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 	s.name = "Contactor"
-	s.version = "1.2.2"
+	s.version = "1.2.4"
 	s.summary = "Manage contacts via the macOS Contacts framework."
 	s.homepage = "https://github.com/kettle/Contactor"
 	s.license = { :type => "MIT" }
