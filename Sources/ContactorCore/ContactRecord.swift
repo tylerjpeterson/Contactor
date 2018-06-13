@@ -80,13 +80,13 @@ public struct ContactRecord: IterableProperties {
 	public var instantMessageAddresses: String! = ""
 
 	/// Base constructor for static prop retrieval
-	init() {
+	public init() {
 	}
 
 	/// Instantiate instance by passing CNContact instance
 	///
 	/// - Parameter contactInstance: CNContact instance
-	init(contactInstance: CNContact) {
+	public init(contactInstance: CNContact) {
 		self.id = contactInstance.identifier
 		self.type = contactInstance.contactType.rawValue == 1 ? "Business" : "Individual"
 		self.namePrefix = contactInstance.namePrefix
