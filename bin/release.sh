@@ -8,6 +8,8 @@ sed -i "" s/version\:\ \"$OLD\"/version\:\ \"$VER\"/g "Sources/Contactor/main.sw
 
 source "bin/build.sh"
 
+mkdir -p "releases"
+
 cp "/usr/local/bin/Contactor" "releases/"
 
 tar -czf "releases/Contactor-$VER.tar.gz" "releases/Contactor"
