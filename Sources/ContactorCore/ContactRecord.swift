@@ -261,7 +261,7 @@ extension IterableProperties {
 	///
 	/// - Returns: Dictionary of properties and their values
 	/// - Throws: Error
-	func allProperties() throws -> [String: Any] {
+	public func allProperties() throws -> [String: Any] {
 		var result: [String: String] = [:]
 		let mirror = Mirror(reflecting: self)
 
