@@ -35,7 +35,7 @@ git add . && \
 	git tag -a $VER -m "Release $VER" && \
 	git push origin master --tags
 
-hub release create -a "releases/Contactor-$VER.tar.gz" -m "Release v$VER" -f "./releases/Contactor-$VER.tar.gz" $VER
+hub release create -a "releases/Contactor-$VER.tar.gz" -m "Release v$VER" -F "./releases/Contactor-$VER.tar.gz" $VER
 
 git push origin master
 
