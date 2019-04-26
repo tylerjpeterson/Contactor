@@ -13,7 +13,7 @@ let contacts = Contactor()
 /// Create an instance of SwiftCLI
 let cli = CLI(
 	name: "Contactor",
-	version: "1.2.6",
+	version: "1.2.7",
 	description: "Contactor - manage contacts via the command line"
 )
 
